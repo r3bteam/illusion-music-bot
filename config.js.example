@@ -12,4 +12,4 @@ cfg.api = {
     youtube: 'API KEY HERE'
 };
 
-exports.cfg = cfg;
+module.exports = cfg;
