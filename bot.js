@@ -51,7 +51,7 @@ client.on(`message`, msg => {
 
                 let embed = {
                     author: { name: client.user.username, icon_url: client.user.avatarURL() },
-                    footer: { text: `Evaluation // Current shard ${client.shard.id} //` },
+                    footer: { text: `Evaluation //` },
                     timestamp: new Date(),
                     color: 127000,
 
@@ -65,7 +65,7 @@ client.on(`message`, msg => {
             } catch (e) {
                 let embed = {
                     author: { name: client.user.username, icon_url: client.user.avatarURL() },
-                    footer: { text: `Evaluation // Current shard ${client.shard.id} //` },
+                    footer: { text: `Evaluation //` },
                     timestamp: new Date(),
                     color: 16711680,
 
