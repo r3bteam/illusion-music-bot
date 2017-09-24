@@ -40,6 +40,46 @@ client.on(`message`, msg => {
         console.log(`${msg.author.tag} used command ${commands[cmd].name} in ${msg.guild.name}/${msg.channel.name} - Content: ${msg.content}`);
         commands[cmd].trigger({ client, msg, params, raw, clean });
     }
+
+    // Eval //
+    if (config.discord.admins.includes(msg.author.id)) {
+        if (msg.content.startsWith(prefix + 'eval')) {
+            let content = msg.content.split('eval ')[1];
+
+            try {
+                let evalResp = eval(content);
+
+                let embed = {
+                    author: { name: client.user.username, icon_url: client.user.avatarURL() },
+                    footer: { text: `Evaluation // Current shard ${client.shard.id} //` },
+                    timestamp: new Date(),
+                    color: 127000,
+
+                    fields: [
+                        { name: '➡ Input', value: '```\n' + content + '\n```' },
+                        { name: '➡ Output', value: '```\n' + evalResp + '\n```' }
+                    ]
+                };
+
+                msg.channel.send({ embed: embed });
+            } catch (e) {
+                let embed = {
+                    author: { name: client.user.username, icon_url: client.user.avatarURL() },
+                    footer: { text: `Evaluation // Current shard ${client.shard.id} //` },
+                    timestamp: new Date(),
+                    color: 16711680,
+
+                    fields: [
+                        { name: '➡ Input', value: '```\n' + content + '\n```' },
+                        { name: '➡ Output', value: '```\n' + e + '\n```' }
+                    ]
+                };
+
+                msg.channel.send({ embed: embed });
+            }
+
+        }
+    }
 });
 
 // Login to the client //
