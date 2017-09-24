@@ -77,7 +77,6 @@ client.on(`message`, msg => {
 
                 msg.channel.send({ embed: embed });
             }
-
         }
     }
 });

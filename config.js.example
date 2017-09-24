@@ -3,7 +3,7 @@ const cfg = [];
 cfg.discord = {
     token: 'BotTokenHere',
     prefix: '!',
-    owner: [
+    admins: [
         'YOUR ID HERE' // Your Name Here
     ]
 };
