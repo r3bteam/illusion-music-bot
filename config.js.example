@@ -1,0 +1,15 @@
+const cfg = [];
+
+cfg.discord = {
+    token: 'BotTokenHere',
+    prefix: '!',
+    owner: [
+        'YOUR ID HERE' // Your Name Here
+    ]
+};
+
+cfg.api = {
+    youtube: 'API KEY HERE'
+};
+
+exports.cfg = cfg;
