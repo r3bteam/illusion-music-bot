@@ -3,7 +3,7 @@
 
 ---
 
-### If you need help you can DM Tetrabyte#4866 on Discord or submit an issue with that you're having trouble with.
+### If you need help you can DM Tetrabyte#4866 on Discord or submit an issue with what you're having trouble with.
 
 ---
 
