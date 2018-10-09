@@ -1,4 +1,5 @@
 const config = require('./config.js');
+const functions = require('./functions.js');
 
 const cmds = [];
 
@@ -14,9 +15,46 @@ cmds.ping = {
 
 cmds.play = {
     name: `play`,
-    help: `Play some music using a youtube link or search query.`,
+    help: `Play some music using a youtube link.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Play Command //
+        functions.summon(msg).then(Player => {
+            if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+            
+            functions.fetchLink(raw).then(link => {
+                functions.queueAdd({ Player, link, msg }).then((que) => {
+                    if (Player.playing == null) {
+                        functions.playNext({ Player, client }).catch(err => {
+                            if (err.message && err.message == "no_track") {
+                                return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Sorry but that track could not be found, we're sorry for the trouble`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                            }
+    
+                            console.error(`Error executing playNext function - Error: ${err}`);
+                            return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Well, that was unexpected. Sorry about that something broke. Please try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                        });
+                    } else {
+                        if (que.type != "playlist") {
+                            msg.channel.send({ embed: { title: `Song added to queue`, color: 255, description: `That song has been added to the queue, view the queue with \`${prefix}queue\``, fields: [ { name: `Title`, value: `[${que.info.title}](${que.info.url})` }, { name: `Author`, value: `[${que.info.author.name}](${que.info.author.url})` }, { name: `Service`, value: (que.info.service == "youtube" ? `[YouTube](https://YouTube.com)` : `[SoundCloud](https://SoundCloud.com)`) }, { name: `Requested By`, value: `${que.user.tag}` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                        }
+                    }
+                }).catch(err => {
+                    console.error(`Error on play command in ${msg.guild.name} - Error: ${err}`);
+                    return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I was unable to fetch a song with that query, please try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                });
+        
+            }).catch(err => {
+                if (err.message && err.message == "no_tracks") {
+                    return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I was unable to find a song with that query, please try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                } else if (err.message && err.message == "not_supported") {
+                    return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Sorry that provider is not yet support on Illusion Music`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                } else {
+                    console.error(`Error fetching link from ${raw} - Error: ${err}`);
+                    return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I was unable to find a song due to an unexpected error, please try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                }
+            });
+        }).catch(err => {
+            console.error(`Error on play command in ${msg.guild.name} - Error: ${err}`);
+            return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I was unable to play a song due to an unexpected error, please try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        });
     }
 };
 

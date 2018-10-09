@@ -58,6 +58,8 @@ funcs.fetchLink = (search) => {
                 if (!result) return reject({ error: true, message: `no_tracks` });
                 resolve({ result: result.items[0], service: 'youtube' });
             });
+        } else {
+            reject({ error: true, message: `not_supported` });
         }
     });
 };
@@ -87,10 +89,10 @@ funcs.playNext = ({ Player, client }) => {
             // queue has atleast one
             let song = Player.queue[0];
 
-            funcs.resolve({ link: song.url }).then(track => {
+            funcs.resolve(song.url).then(track => {
                 if (track) {
-                    song.lava = track.tracks[0];
-                    Player.player.play(track.tracks[0].track);
+                    song.lava = track[0].track;
+                    Player.player.play(track[0].track);
                     Player.playing = song;
 
                     resolve(true);
