@@ -106,9 +106,9 @@ Once that is downloaded just run it and it will start installing, once that is i
 - [x] Add play command
 - [x] Add stop command
 - [x] Add volume command
-- [ ] Add pause/resume command
+- [x] Add pause/resume command
 - [x] Add queue command
 - [ ] Add help command
 - [x] Add shuffle command
 - [ ] Add remove command
-- [ ] Add repeat command
+- [x] Add repeat command
