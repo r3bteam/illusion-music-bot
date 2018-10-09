@@ -84,7 +84,24 @@ cmds.volume = {
     name: `volume`,
     help: `Change the current volume that the music is playing on.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Volume Command //
+        let volume = parseInt(raw.replace(/%/g, ''));
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        
+        if (isNaN(volume) || !volume) {
+            return msg.channel.send({ embed: { title: "Current Volume", color: 4748292, description: `To change the volume use the command \`${config.discord.prefix}volume <Number>\``, fields: [ { name: 'Volume Level 🔈', value: `${Player.volume.percent}%` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        }
+
+        if (Math.floor(volume) > 100 || Math.floor(volume) < 1) {
+            return msg.channel.send({ embed: { title: "Error", color: 16711680, description: `You can only use the volume command with a number between 1-100%, please check your command and try again.`, timestamp: new Date(), footer: { text: "Illusion Music", icon_url: client.user.avatarURL() } } });
+        }
+
+        Player.player.volume(volume);
+
+        return msg.channel.send({ embed: { title: `Volume Adjusted`, color: 581923, fields: [ { name: 'Volume Level 🔈', value: `${Player.volume.percent}%` }, { name: 'Adjusted Volume 🔈', value: `${Math.floor(volume)}%` } ], timestamp: new Date(), footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() } } });
     }
 };
 
