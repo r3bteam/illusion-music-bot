@@ -97,7 +97,7 @@ funcs.playNext = ({ Player, client }) => {
 
                     resolve(true);
 
-                    funcs.tetranite.log(`Playing ${song.title} from ${song.service} in ${Player.guild.name} requested by: ${song.user.tag}`, client);
+                    console.log(`${chalk.green('[P]')} | ${chalk.cyan(`Playing ${song.title} from ${song.service} in ${Player.guild.name} requested by: ${song.user.tag}`)}`);
                     Player.channel.send({ embed: { title: `Illusion Music`, color: 255, fields: [ { name: `Title`, value: `[${song.title}](${song.url})` }, { name: `Author`, value: `[${song.author.name}](${song.author.url})` }, { name: `Service`, value: `[YouTube](https://YouTube.com)` }, { name: `Requested By`, value: `${song.user.tag}` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
 
                     Player.player.once('end', data => {
@@ -119,22 +119,23 @@ funcs.playNext = ({ Player, client }) => {
 
                     Player.player.once('error', err => {
                         Player.player.stop();
-                        Manager.leave(Player.guild.id);
-                        Players.delete(Player.guild.id);
+                        funcs.getManager().leave(Player.guild.id);
+                        funcs.getPlayers().delete(Player.guild.id);
                         Player.player.disconnect(`error`);
                         reject(err);
                     });
                 } else {
-                    funcs.Manager().leave(Player.guild.id);
+                    funcs.getManager().leave(Player.guild.id);
                     Player.player.disconnect(`error`);
-                    Players.delete(Player.guild.id);
+                    funcs.getPlayers().delete(Player.guild.id);
                     return reject({ error: true, message: `no_track` });
                 }
             }).catch(reject);
-        } else {
-            funcs.Manager().leave(Player.guild.id);
+        } else {            
+            Player.player.stop();
+            funcs.getManager().leave(Player.guild.id);
+            funcs.getPlayers().delete(Player.guild.id);
             Player.player.disconnect(`queue_empty`);
-            Players.delete(Player.guild.id);
             return Player.channel.send({ embed: { title: `Illusion Music`, color: 12394, description: `The queue is empty, disconnecting from the voice channel`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
         }
     });
@@ -150,6 +151,31 @@ funcs.resolve = (link) => {
                     return reject({ error: true, message: `not_found` });
                 }
             }).catch(reject);
+        }
+    });
+};
+
+funcs.mixArray = (array) => {
+    for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+    }
+
+    return array;
+};
+
+funcs.shuffle = ({ array, times }) => {
+    return new Promise((resolve, reject) => {
+        if (array) {
+            for (let t = 0; t < times; t++) {
+                let arr = funcs.mixArray(array);
+
+                if (t >= times-1) {
+                    return resolve(arr);
+                }
+            }
         }
     });
 };
