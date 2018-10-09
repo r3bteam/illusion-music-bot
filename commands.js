@@ -1,6 +1,9 @@
 const config = require('./config.js');
 const functions = require('./functions.js');
 
+const Players = functions.getPlayers;
+const Manager = functions.getManager;
+
 const cmds = [];
 
 cmds.ping = {
@@ -62,7 +65,18 @@ cmds.stop = {
     name: `stop`,
     help: `Make the bot stop playing music and disconnect from the channel.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Stop command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not summoned in this server, summon me with \`${prefix}summon\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+
+        Player.player.stop();
+        Manager().leave(Player.guild.id);
+        Players().delete(Player.guild.id);
+        Player.player.disconnect(`stopped`);
+
+        return msg.channel.send({ embed: { title: `Illusion Music`, color: 65280, description: `Music stoppped, bot disconnected`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
     }
 };
 

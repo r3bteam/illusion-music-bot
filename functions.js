@@ -91,8 +91,8 @@ funcs.playNext = ({ Player, client }) => {
 
             funcs.resolve(song.url).then(track => {
                 if (track) {
-                    song.lava = track[0].track;
-                    Player.player.play(track[0].track);
+                    song.lava = track.tracks[0].track;
+                    Player.player.play(track.tracks[0].track);
                     Player.playing = song;
 
                     resolve(true);
