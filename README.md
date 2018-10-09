@@ -104,11 +104,11 @@ Once that is downloaded just run it and it will start installing, once that is i
 - [x] Setup command handler
 - [x] Add ping command
 - [x] Add play command
-- [ ] Add stop command
-- [ ] Add volume command
+- [x] Add stop command
+- [x] Add volume command
 - [ ] Add pause/resume command
-- [ ] Add queue command
+- [x] Add queue command
 - [ ] Add help command
-- [ ] Add shuffle command
+- [x] Add shuffle command
 - [ ] Add remove command
 - [ ] Add repeat command
