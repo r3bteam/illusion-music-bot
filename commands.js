@@ -89,7 +89,7 @@ cmds.volume = {
         if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
         if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
         if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
-        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the volume command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
         
         if (isNaN(volume) || !volume) {
             return msg.channel.send({ embed: { title: "Current Volume", color: 4748292, description: `To change the volume use the command \`${config.discord.prefix}volume <Number>\``, fields: [ { name: 'Volume Level 🔈', value: `${Player.volume.percent}%` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
@@ -109,7 +109,19 @@ cmds.pause = {
     name: `pause`,
     help: `Pause the current playing song.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Pause Command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the pause command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        
+        if (Player.player.paused) {
+            return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `The player is already paused, if you're trying to resume it type \`${config.discord.prefix}resume\``, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        }
+
+        Player.player.pause(true);
+
+        return msg.channel.send({ embed: { title: `Player Paused`, color: 581923, description: `Player is now paused, to resume it type \`${config.discord.prefix}resume\``, timestamp: new Date(), footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() } } });
     }
 };
 
@@ -117,7 +129,19 @@ cmds.resume = {
     name: `resume`,
     help: `Resume the music playing if you paused it.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Resume Command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the resume command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        
+        if (!Player.player.paused) {
+            return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `The player is not currently paused, if you're trying to pause it type \`${config.discord.prefix}pause\``, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        }
+
+        Player.player.pause(false);
+
+        return msg.channel.send({ embed: { title: `Player Paused`, color: 581923, description: `Player successfully resumed, to pause it again type \`${config.discord.prefix}pause\``, timestamp: new Date(), footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() } } });
     }
 };
 
@@ -194,7 +218,19 @@ cmds.repeat = {
     name: `repeat`,
     help: `Make the bot repeat the current song until you turn it off.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Repeat Command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        
+        if (!Player.repeat) {
+            Player.repeat = true;
+            return msg.channel.send({ embed: { title: `Illusion Music`, color: 8388736, description: `Successfully enabled repeat for ${Player.playing.title}\n\nYou can turn this off by running \`${config.discord.prefix}repeat\` again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() } } });
+        } else {
+            Player.repeat = false;
+            return msg.channel.send({ embed: { title: `Illusion Music`, color: 8388736, description: `Successfully disabled repeat\n\nYou can turn this on by running \`${config.discord.prefix}repeat\` again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() } } });
+        }
     }
 };
 
