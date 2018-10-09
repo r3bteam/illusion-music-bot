@@ -2,6 +2,8 @@ const config = require('./config.js');
 const commands = require('./commands.js');
 const functions = require('./functions.js');
 
+const chalk = require('chalk');
+
 const prefix = config.discord.prefix;
 
 const evnts = [];
@@ -24,7 +26,7 @@ evnts.msg = (msg, client) => {
         // Check for the command and run it if exists //
         if (commands[cmd]) {
             if (!msg.channel.permissionsFor(msg.guild.me).has(['SEND_MESSAGES', 'EMBED_LINKS'])) return msg.channel.send(`The bot does not have permissions to send embeds, I will not be able to proceed with this command.\n\nPlease give me Embed Links permissions.`);
-            console.log(`${msg.author.tag} used command ${commands[cmd].name} in ${msg.guild.name}/${msg.channel.name} - Content: ${msg.content}`);
+            console.log(`${chalk.cyan('[C]')} | ${chalk.green(`${msg.author.tag} used command ${commands[cmd].name} in ${msg.guild.name}/${msg.channel.name} - Content: ${msg.content}`)}`);
             commands[cmd].trigger({ client, msg, params, raw, clean });
         }
 
