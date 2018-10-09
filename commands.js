@@ -1,6 +1,9 @@
 const config = require('./config.js');
 const functions = require('./functions.js');
 
+const Players = functions.getPlayers;
+const Manager = functions.getManager;
+
 const cmds = [];
 
 cmds.ping = {
@@ -33,7 +36,7 @@ cmds.play = {
                         });
                     } else {
                         if (que.type != "playlist") {
-                            msg.channel.send({ embed: { title: `Song added to queue`, color: 255, description: `That song has been added to the queue, view the queue with \`${prefix}queue\``, fields: [ { name: `Title`, value: `[${que.info.title}](${que.info.url})` }, { name: `Author`, value: `[${que.info.author.name}](${que.info.author.url})` }, { name: `Service`, value: (que.info.service == "youtube" ? `[YouTube](https://YouTube.com)` : `[SoundCloud](https://SoundCloud.com)`) }, { name: `Requested By`, value: `${que.user.tag}` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+                            msg.channel.send({ embed: { title: `Song added to queue`, color: 255, description: `That song has been added to the queue, view the queue with \`${config.discord.prefix}queue\``, fields: [ { name: `Title`, value: `[${que.info.title}](${que.info.url})` }, { name: `Author`, value: `[${que.info.author.name}](${que.info.author.url})` }, { name: `Service`, value: (que.info.service == "youtube" ? `[YouTube](https://YouTube.com)` : `[SoundCloud](https://SoundCloud.com)`) }, { name: `Requested By`, value: `${que.user.tag}` } ], footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
                         }
                     }
                 }).catch(err => {
@@ -62,7 +65,18 @@ cmds.stop = {
     name: `stop`,
     help: `Make the bot stop playing music and disconnect from the channel.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Stop command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+
+        Player.player.stop();
+        Manager().leave(Player.guild.id);
+        Players().delete(Player.guild.id);
+        Player.player.disconnect(`stopped`);
+
+        return msg.channel.send({ embed: { title: `Illusion Music`, color: 65280, description: `Music stoppped, bot disconnected`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
     }
 };
 
@@ -94,7 +108,40 @@ cmds.queue = {
     name: `queue`,
     help: `Get a list of the songs currently in the queue.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Queue Command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (Player.queue.length <= 0) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `The queue is currently empty, add some songs with \`${config.discord.prefix}play <YouTube Link>\``, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+
+        let items = Player.queue.map((item, index) => `**#${index+1}:** **${item.title.substring(0, 24)}** - ${item.author.name} (Added by: ${item.user.tag})`);
+
+        if (items.length > 20) {
+            text = `${items.slice(0, 20).join('\n')}\n\n**and ${items.length-20} more**`;
+        } else {
+            text = `${items.join('\n')}`;
+        }
+
+        return msg.channel.send({ embed: { title: `Current queue`, color: 16744448, description: text, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+    }
+};
+
+cmds.skip = {
+    name: `skip`,
+    help: `Skip the current song.`,
+    trigger: ({ client, msg, params, raw, clean }) => {
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+
+        if (Player.playing != null) {
+            Player.player.stop();
+            Player.playing = null;
+            return msg.channel.send({ embed: { title: `Song skipped`, color: 16744448, description: `Song was skipped`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        }
     }
 };
 
@@ -102,7 +149,19 @@ cmds.shuffle = {
     name: `shuffle`,
     help: `Shuffle the current queue.`,
     trigger: ({ client, msg, params, raw, clean }) => {
-        // Shuffle Command //
+        let Player = Players().get(msg.guild.id);
+        if (!Player) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `I'm currently not playing in this server, play something with \`${config.discord.prefix}play <YouTube Link>\` and try again`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Something went wrong, I cannot detect my current voice channel, try again later`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (!msg.member.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in a voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (msg.member.voice.channel != msg.guild.me.voice.channel) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `You must be in my current voice channel to use the play command`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+        if (Player.queue.length < 2) return msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `The queue only has one item in it, add more to shuffle`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+
+        msg.channel.send({ embed: { title: `Illusion Music`, color: 16711680, description: `Shuffling the current queue, gimme a minute`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } }).then(m => {
+            functions.shuffle({ array: Player.queue, times: 5 }).then(queue => {
+                Player.queue = queue;
+                m.edit({ embed: { title: `Illusion Music`, color: 16711680, description: `Shuffled the queue successfully`, footer: { text: `Illusion Music`, icon_url: client.user.avatarURL() }, timestamp: new Date() } });
+            });
+        });
     }
 };
 
