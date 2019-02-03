@@ -26,4 +26,4 @@ client.on(`disconnected`, () => { console.log(`${chalk.green('[E]')} | ${chalk.y
 client.on(`message`, msg => { events.msg(msg, client); });
 
 // Login to the client //
-client.login(config.discord.token);
+ client.login(process.env.BOT_TOKEN);
